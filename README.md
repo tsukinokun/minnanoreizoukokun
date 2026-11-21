@@ -1,10 +1,10 @@
 # みんなの冷蔵庫くん
 
-> まだ「好き」に出会えていない誰かへ。冷蔵庫から見つける、今日のごはん。
+> 冷蔵庫から見つける、今日のごはん。
 
 **公開版：https://minnanoreizoukokun.vercel.app**
 
-Hack Stage | GROST vol.1（お題「まだ"好き"に出会えていない誰かへ」）の作品です。
+HACK STAGE | GROST vol.1 参加作品
 
 ## どんなアプリ？
 
