@@ -3,28 +3,34 @@
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Avatar } from "@/app/_components/Avatar";
 import { Kitchen } from "@/app/_components/Kitchen";
 import { NameTag } from "@/app/_components/NameTag";
 import { Photo } from "@/app/_components/Photo";
-import { PlatePlaceholder } from "@/app/_components/recipe/RecipeParts";
+import { PolaroidGrid } from "@/app/_components/RecipePolaroids";
+import { RedPen } from "@/app/recipes/new/_components/bits";
 import { updateProfileName } from "@/app/actions/posting";
 import { FridgeFace } from "@/app/diagnosis/_components/FridgeFace";
 import { loginHref } from "@/lib/auth/next";
 import { getMyProfileName } from "@/lib/auth/profile";
 import { jitter, pick } from "@/lib/jitter";
-import { loadMine, type Mine, type MineComment, type MineRecipe } from "@/lib/me/client";
+import { getFollowCounts, listMyFollows, toggleFollow, type FollowList } from "@/lib/follows/client";
+import { setMyAvatar, useMyAvatar } from "@/lib/me/avatar";
+import { loadMine, type Mine, type MineComment } from "@/lib/me/client";
 import { listMyStocks, toggleStock, type StockList } from "@/lib/stocks/client";
 import { signOut } from "@/lib/supabase/browser";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { useAuth } from "@/lib/supabase/useAuth";
 import type { Recipe } from "@/lib/types";
+import { userHref } from "@/lib/users/key";
 
-type Tab = "stocks" | "posted" | "comments" | "likes";
+type Tab = "stocks" | "posted" | "comments" | "likes" | "follows";
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "stocks", label: "ストック", icon: "📎" },
   { id: "posted", label: "投稿", icon: "✎" },
   { id: "comments", label: "ひとこと", icon: "💬" },
   { id: "likes", label: "スキ", icon: "♥" },
+  { id: "follows", label: "フォロー", icon: "👥" },
 ];
 const isTab = (v: string): v is Tab => TABS.some((t) => t.id === v);
 
@@ -40,8 +46,13 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
   const [tab, setTab] = useState<Tab>("stocks");
   const [mine, setMine] = useState<Mine | null>(null);
   const [stocks, setStocks] = useState<StockList | null>(null);
+  const [follows, setFollows] = useState<FollowList | null>(null);
+  const [followCounts, setFollowCounts] = useState<{ followers: number; following: number } | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // アイコンを変えられるのは、仮保存モードか Google でログインしている人
+  const canEditAvatar = !configured || member;
+  const avatar = useMyAvatar(uid, ready);
 
   // #posted などで開いたタブを覚えておく
   useEffect(() => {
@@ -61,7 +72,9 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
     let alive = true;
     loadMine(recipes).then((m) => alive && setMine(m));
     listMyStocks(recipes).then((s) => alive && setStocks(s));
+    listMyFollows().then((f) => alive && setFollows(f));
     if (uid) getMyProfileName(uid).then((n) => alive && setName(n));
+    if (uid && member) getFollowCounts(uid).then((c) => alive && setFollowCounts(c));
     return () => {
       alive = false;
     };
@@ -87,11 +100,23 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
     if (res.ok && stocks?.ok) setStocks({ ok: true, stocks: stocks.stocks.filter((s) => s.recipe.id !== id) });
   };
 
+  const unfollowUser = async (key: string) => {
+    if (!follows?.ok) return;
+    const user = follows.users.find((u) => u.key === key);
+    if (!user) return;
+    const res = await toggleFollow({ name: user.name, ...(key.startsWith("name-") ? {} : { id: key }) }, true);
+    if (res.ok) {
+      setFollows({ ok: true, users: follows.users.filter((u) => u.key !== key) });
+      setFollowCounts((c) => (c ? { ...c, following: Math.max(0, c.following - 1) } : c));
+    }
+  };
+
   const counts: Record<Tab, number | null> = {
     stocks: stocks?.ok ? stocks.stocks.length : null,
     posted: mine ? mine.posted.length : null,
     comments: mine ? mine.comments.length : null,
     likes: mine ? mine.likes.length : null,
+    follows: follows?.ok ? follows.users.length : null,
   };
 
   return (
@@ -109,13 +134,28 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
           {configured && !ready ? (
             <p className="font-hand py-8 text-center text-ink/60">冷蔵庫をたしかめてる…</p>
           ) : (
-            <div className="relative">
+            <div className="relative pt-4">
+              <AvatarPicker name={(configured ? name : null) ?? "ななしの台所"} url={avatar} canEdit={canEditAvatar} />
               <NameTag
                 name={configured ? name : null}
                 email={member ? session?.email : undefined}
                 caption={configured ? "この冷蔵庫の持ち主は" : "この端末の冷蔵庫"}
                 onSave={session ? saveName : undefined}
               />
+              {member && uid && followCounts && (
+                <Link
+                  href={userHref({ id: uid, name: name ?? "" })}
+                  className="font-hand mx-auto mt-3 flex w-fit items-baseline gap-3 text-[0.8rem] text-ink/70 hover:text-ink"
+                >
+                  <span>
+                    フォロワー <b className="text-[var(--tomato)]">{followCounts.followers}</b>
+                  </span>
+                  <span>
+                    フォロー中 <b className="text-[var(--tomato)]">{followCounts.following}</b>
+                  </span>
+                  <span className="text-[0.7rem] underline decoration-dotted underline-offset-4">みんなから見たページ →</span>
+                </Link>
+              )}
               {!configured && (
                 <p className="font-hand mt-3 text-center text-[0.75rem] text-ink/60">いまは仮保存モード。この端末に保存したものが並んでいます</p>
               )}
@@ -133,11 +173,11 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
                   type="button"
                   onClick={() => choose(t.id)}
                   aria-pressed={on}
-                  className={`font-hand relative flex-1 whitespace-nowrap rounded-t-[12px_10px] border-2 border-b-0 border-ink/15 px-0.5 pb-1.5 pt-2 text-[0.76rem] ${on ? "z-10 bg-[#f7fbf8] text-ink" : "bg-[#dfeee6] text-ink/60"}`}
+                  className={`font-hand relative min-w-0 flex-1 whitespace-nowrap rounded-t-[12px_10px] border-2 border-b-0 border-ink/15 px-0 pb-1.5 pt-2 text-[0.68rem] ${on ? "z-10 bg-[#f7fbf8] text-ink" : "bg-[#dfeee6] text-ink/60"}`}
                   animate={{ y: on ? -4 : 0, rotate: on ? 0 : jitter(t.id, -1.5, 1.5) }}
                   transition={{ type: "spring", stiffness: 400, damping: 22 }}
                 >
-                  <span aria-hidden className="mr-0.5 text-[0.7rem]">
+                  <span aria-hidden className="mr-px text-[0.6rem]">
                     {t.icon}
                   </span>
                   {t.label}
@@ -166,9 +206,10 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
                   ) : stocks.stocks.length === 0 ? (
                     <Says line="まだからっぽ。気になるレシピをクリップしてね" link={{ href: "/diagnosis", label: "冷蔵庫で探す →" }} />
                   ) : (
-                    <Grid
+                    <PolaroidGrid
                       items={stocks.stocks.map((s) => ({ id: s.recipe.id, title: s.recipe.title, coverImage: s.recipe.coverImage, href: `/recipes/${encodeURIComponent(s.recipe.id)}`, at: s.stockedAt }))}
                       onRemove={unstock}
+                      removeLabel={(t) => `${t}をストックから外す`}
                     />
                   ))}
 
@@ -178,7 +219,7 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
                   ) : mine.posted.length === 0 ? (
                     <Says line="まだ1枚も貼ってないね。得意料理、教えて！" link={{ href: "/recipes/new", label: "レシピを貼る →" }} />
                   ) : (
-                    <Grid items={mine.posted} />
+                    <PolaroidGrid items={mine.posted} />
                   ))}
 
                 {tab === "comments" &&
@@ -200,7 +241,49 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
                   ) : mine.likes.length === 0 ? (
                     <Says line="スキはまだ。ハートを押すとここに集まるよ" link={{ href: "/diagnosis", label: "冷蔵庫で探す →" }} />
                   ) : (
-                    <Grid items={mine.likes} />
+                    <PolaroidGrid items={mine.likes} />
+                  ))}
+
+                {tab === "follows" &&
+                  (follows === null ? (
+                    <Loading />
+                  ) : !follows.ok ? (
+                    follows.reason === "login_required" ? (
+                      <LoginNudge text="フォローは Google でログインすると使えるよ" />
+                    ) : (
+                      <Says line={follows.message} mood="pout" />
+                    )
+                  ) : follows.users.length === 0 ? (
+                    <Says line="まだだれもフォローしてないよ。気になる作者をフォローしてね" link={{ href: "/diagnosis", label: "レシピを探す →" }} />
+                  ) : (
+                    <ul className="space-y-2.5">
+                      <AnimatePresence initial={false}>
+                        {follows.users.map((u, i) => (
+                          <motion.li
+                            key={u.key}
+                            layout
+                            className="flex items-center gap-3 rounded-[4px_12px_4px_10px] bg-white/85 py-2 pl-2 pr-3 shadow-[1px_3px_6px_rgba(60,40,20,0.12)]"
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0, rotate: jitter(u.key, -1.5, 1.5) }}
+                            exit={{ opacity: 0, x: 40, transition: { duration: 0.2 } }}
+                            transition={{ type: "spring", stiffness: 260, damping: 20, delay: Math.min(i, 8) * 0.04 }}
+                          >
+                            <Link href={u.href} className="flex min-w-0 flex-1 items-center gap-3">
+                              <Avatar name={u.name} url={u.avatarUrl} size={40} />
+                              <span className="font-hand truncate text-[1rem] text-ink">{u.name}</span>
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => unfollowUser(u.key)}
+                              aria-label={`${u.name}さんのフォローをやめる`}
+                              className="font-hand shrink-0 rounded-full border-2 border-ink/60 px-2 text-[0.65rem] text-ink/70 hover:text-ink"
+                            >
+                              はずす
+                            </button>
+                          </motion.li>
+                        ))}
+                      </AnimatePresence>
+                    </ul>
                   ))}
               </motion.div>
             </AnimatePresence>
@@ -216,6 +299,66 @@ export function MyFridge({ recipes }: { recipes: Recipe[] }) {
         </main>
       </Kitchen>
     </MotionConfig>
+  );
+}
+
+/** 名札の左上に貼る、自分のアイコン。タップで写真を選んで変えられる */
+function AvatarPicker({ name, url, canEdit }: { name: string; url: string | null; canEdit: boolean }) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const change = async (file: File | null) => {
+    setSaving(true);
+    setError(undefined);
+    const res = await setMyAvatar(file);
+    setSaving(false);
+    if (!res.ok) setError(res.reason === "login_required" ? "アイコンは Google でログインすると変えられます" : res.message);
+  };
+
+  return (
+    <div className="absolute -top-1 left-0 z-20 flex flex-col items-start">
+      <label className={`group relative block ${canEdit ? "cursor-pointer" : "cursor-default"}`} aria-label={canEdit ? "アイコンの写真を選ぶ" : "アイコン"}>
+        <motion.span
+          className="block"
+          animate={{ rotate: saving ? [-8, 8, -8] : -8 }}
+          transition={saving ? { duration: 0.5, repeat: Infinity } : { type: "spring" }}
+        >
+          <Avatar name={name} url={url} size={68} className="border-4" />
+        </motion.span>
+        {canEdit && (
+          <>
+            <span
+              aria-hidden
+              className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-ink text-[0.7rem] text-white shadow transition-transform group-hover:scale-110"
+            >
+              📷
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              disabled={saving}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) change(f);
+              }}
+            />
+          </>
+        )}
+      </label>
+      {canEdit && url && (
+        <button
+          type="button"
+          onClick={() => change(null)}
+          disabled={saving}
+          className="font-hand ml-1 mt-1 text-[0.6rem] text-ink/50 underline underline-offset-2 hover:text-ink"
+        >
+          写真を外す
+        </button>
+      )}
+      <RedPen message={error} />
+    </div>
   );
 }
 
@@ -255,60 +398,6 @@ function LoginNudge({ text }: { text: string }) {
         ログイン →
       </Link>
     </p>
-  );
-}
-
-/** レシピの小さなポラロイドを2列に */
-function Grid({ items, onRemove }: { items: MineRecipe[]; onRemove?: (id: string) => void }) {
-  return (
-    <ul className="grid grid-cols-2 gap-x-3 gap-y-5">
-      <AnimatePresence initial={false}>
-        {items.map((r, i) => (
-          <motion.li
-            key={r.id}
-            layout
-            className="relative"
-            initial={{ opacity: 0, y: 16, rotate: 0 }}
-            animate={{ opacity: 1, y: 0, rotate: jitter(r.id, -3, 3) }}
-            exit={{ opacity: 0, scale: 0.6, rotate: 12, transition: { duration: 0.2 } }}
-            transition={{ type: "spring", stiffness: 220, damping: 18, delay: Math.min(i, 8) * 0.04 }}
-          >
-            <Polaroid r={r} />
-            {onRemove && (
-              <button
-                type="button"
-                onClick={() => onRemove(r.id)}
-                aria-label={`${r.title}をストックから外す`}
-                className="font-hand absolute -right-1.5 -top-2 z-10 rounded-full border-2 border-ink/70 bg-white px-1.5 text-[0.62rem] text-ink/70 shadow-[0_2px_0_rgba(0,0,0,0.15)] hover:text-ink"
-              >
-                はずす
-              </button>
-            )}
-          </motion.li>
-        ))}
-      </AnimatePresence>
-    </ul>
-  );
-}
-
-function Polaroid({ r }: { r: MineRecipe }) {
-  const body = (
-    <>
-      <span aria-hidden className="absolute -top-1.5 left-1/2 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-[#3c8dde] shadow-[0_1.5px_0_rgba(0,0,0,0.25)]" />
-      <span className="relative block aspect-square overflow-hidden">
-        {r.coverImage ? <Photo src={r.coverImage} alt="" sizes="200px" fallback={<PlatePlaceholder title={r.title} />} /> : <PlatePlaceholder title={r.title} />}
-      </span>
-      <span className="font-hand mt-1.5 line-clamp-2 block text-[0.85rem] leading-tight text-ink">{r.title}</span>
-      {!r.href && <span className="mt-0.5 block text-[0.6rem] text-ink/45">この端末に仮保存</span>}
-    </>
-  );
-  const cls = "relative block bg-white p-1.5 pb-2.5 shadow-[1px_4px_8px_rgba(60,40,20,0.16)]";
-  return r.href ? (
-    <Link href={r.href} className={`${cls} transition-transform hover:-translate-y-1`}>
-      {body}
-    </Link>
-  ) : (
-    <div className={cls}>{body}</div>
   );
 }
 

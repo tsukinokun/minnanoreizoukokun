@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { loginHref } from "@/lib/auth/next";
 import { getMyProfileName } from "@/lib/auth/profile";
+import { useMyAvatar } from "@/lib/me/avatar";
+import { Avatar } from "./Avatar";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { useAuth } from "@/lib/supabase/useAuth";
 
@@ -21,6 +23,9 @@ export function AccountBadge({ className = "" }: { className?: string }) {
   const { session, ready } = useAuth();
   const [name, setName] = useState<string | null>(null);
   const signedIn = !!session && !session.isAnonymous;
+  const configured = !!getSupabaseEnv();
+  // 自分のアイコン（仮保存モード、または Google ログイン中）
+  const avatar = useMyAvatar(session?.userId, ready && (!configured || signedIn));
 
   useEffect(() => {
     if (!signedIn || !session) return;
@@ -32,7 +37,6 @@ export function AccountBadge({ className = "" }: { className?: string }) {
   }, [signedIn, session]);
 
   if (!ready) return null;
-  const configured = !!getSupabaseEnv();
 
   return (
     <motion.span
@@ -48,7 +52,8 @@ export function AccountBadge({ className = "" }: { className?: string }) {
           aria-label="わたしの冷蔵庫（この端末の仮保存）"
           className="font-hand flex items-center gap-1 rounded-full border-2 border-ink/70 bg-[#fff8ea] px-2 py-0.5 text-[0.7rem] text-ink shadow-[0_2px_0_rgba(0,0,0,0.15)]"
         >
-          <span aria-hidden>🧊</span>わたしの
+          {avatar ? <Avatar name="わたし" url={avatar} size={18} className="-ml-1 border" /> : <span aria-hidden>🧊</span>}
+          わたしの
         </Link>
       ) : signedIn ? (
         <Link
@@ -56,7 +61,7 @@ export function AccountBadge({ className = "" }: { className?: string }) {
           aria-label={`${name ?? "あなた"}の冷蔵庫（ログイン中）`}
           className="flex items-center gap-1 rounded-full bg-white py-0.5 pl-0.5 pr-2 shadow-[0_2px_0_rgba(0,0,0,0.2)]"
         >
-          <span className="font-hand grid h-6 w-6 place-items-center rounded-full bg-[var(--tomato)] text-xs text-white">{[...(name ?? "ぼ")][0]}</span>
+          <Avatar name={name ?? "ぼ"} url={avatar} size={24} className="border" />
           <span className="font-hand max-w-[5rem] truncate text-[0.68rem] text-ink">{name ?? "…"}</span>
         </Link>
       ) : (

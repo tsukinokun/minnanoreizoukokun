@@ -83,10 +83,21 @@ describe("normalizeSupabaseUrl", async () => {
 
 describe("select 文", async () => {
   const { RECIPE_SELECT, COMMENT_SELECT } = await import("@/lib/supabase/mappers");
+  it("作者にアカウントがあれば id とアイコンも付け、無ければ名前だけ", () => {
+    const row = recipeRow(recipes[0]);
+    expect(toRecipe({ ...row, author: { id: "u1", name: "はなこ", avatar_url: "https://x/a.png" } }).author).toEqual({
+      name: "はなこ",
+      id: "u1",
+      avatarUrl: "https://x/a.png",
+    });
+    expect(toRecipe({ ...row, author: { id: "u1", name: "はなこ", avatar_url: null } }).author).toEqual({ name: "はなこ", id: "u1" });
+    expect(toRecipe({ ...row, author: null, author_name: "たまご係" }).author).toEqual({ name: "たまご係" });
+  });
+
   it("profiles への埋め込みは外部キーを明示している（PGRST201 対策）", () => {
     for (const select of [RECIPE_SELECT, COMMENT_SELECT]) {
       expect(select).not.toMatch(/profiles\(/);
-      expect(select).toMatch(/profiles!\w+_fkey\(name\)/);
+      expect(select).toMatch(/profiles!\w+_fkey\(id, name, avatar_url\)/);
     }
   });
 });

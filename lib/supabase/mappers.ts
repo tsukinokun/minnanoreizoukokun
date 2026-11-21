@@ -1,5 +1,6 @@
 // Supabase の行 → lib/types.ts の形。null は「無し」として省く（JSON データと同じ形になる）
 import type {
+  Author,
   Ingredient,
   IngredientCategory,
   Question,
@@ -16,7 +17,7 @@ import type {
 export const INGREDIENT_SELECT = "id, name, reading, aliases, category, image";
 export const RECIPE_SELECT =
   "id, title, catch, description, author_name, cover_image, minutes, servings, tags, created_at," +
-  " author:profiles!recipes_author_id_fkey(name)," +
+  " author:profiles!recipes_author_id_fkey(id, name, avatar_url)," +
   " recipe_ingredients(position, ingredient_id, name, amount)," +
   " recipe_steps(position, text, image_url)," +
   " recipe_photos(url, caption, kind, created_at)";
@@ -43,7 +44,7 @@ export type RecipeRow = {
   servings: number;
   tags: TagWeights | null;
   created_at: string;
-  author: { name: string } | null;
+  author: ProfileRow | null;
   recipe_ingredients: { position: number; ingredient_id: string | null; name: string; amount: string }[];
   recipe_steps: { position: number; text: string; image_url: string | null }[];
   recipe_photos: { url: string; caption: string | null; kind: RecipePhoto["kind"]; created_at: string }[];
@@ -86,13 +87,22 @@ export function toIngredient(row: IngredientRow): Ingredient {
   };
 }
 
+/** profiles の埋め込み（作者・コメントを書いた人） */
+export type ProfileRow = { id?: string; name: string; avatar_url?: string | null };
+
+/** 作者。アカウントがあれば id とアイコンも付ける（見本データの作者は名前だけ） */
+export function toAuthor(p: ProfileRow | null, fallbackName?: string | null): Author {
+  if (!p) return { name: fallbackName ?? DEFAULT_AUTHOR };
+  return { name: p.name ?? fallbackName ?? DEFAULT_AUTHOR, ...(p.id ? { id: p.id } : {}), ...(p.avatar_url ? { avatarUrl: p.avatar_url } : {}) };
+}
+
 export function toRecipe(row: RecipeRow): Recipe {
   return {
     id: row.id,
     title: row.title,
     catch: row.catch,
     ...(row.description ? { description: row.description } : {}),
-    author: { name: row.author?.name ?? row.author_name ?? DEFAULT_AUTHOR },
+    author: toAuthor(row.author, row.author_name),
     coverImage: row.cover_image,
     photos: [...row.recipe_photos]
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
@@ -132,7 +142,8 @@ export function toQuestion(row: QuestionRow): Question {
 
 /* ---------- スキ・コメント ---------- */
 
-export const COMMENT_SELECT = "id, recipe_id, body, photo_url, created_at, author:profiles!recipe_comments_user_id_fkey(name)";
+export const COMMENT_SELECT =
+  "id, recipe_id, user_id, body, photo_url, created_at, author:profiles!recipe_comments_user_id_fkey(id, name, avatar_url)";
 
 export type CommentRow = {
   id: number | string;
@@ -140,14 +151,15 @@ export type CommentRow = {
   body: string;
   photo_url: string | null;
   created_at: string;
-  author: { name: string } | null;
+  user_id?: string | null;
+  author: ProfileRow | null;
 };
 
 export function toComment(row: CommentRow): RecipeComment {
   return {
     id: String(row.id),
     recipeId: row.recipe_id,
-    author: { name: row.author?.name ?? DEFAULT_AUTHOR },
+    author: toAuthor(row.author),
     body: row.body,
     ...(row.photo_url ? { photo: row.photo_url } : {}),
     createdAt: toIsoString(row.created_at),
