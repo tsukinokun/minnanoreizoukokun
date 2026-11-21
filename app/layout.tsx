@@ -27,7 +27,7 @@ const flagFont = Noto_Color_Emoji({
 
 export const metadata: Metadata = {
   title: { default: "みんなの冷蔵庫くん", template: "%s | みんなの冷蔵庫くん" },
-  description: "まだ「好き」に出会えていない誰かへ。冷蔵庫から見つける、今日のごはん。",
+  description: "新しいスキな料理を、あなたに。冷蔵庫から見つける、今日のごはん。",
 };
 
 export const viewport: Viewport = {

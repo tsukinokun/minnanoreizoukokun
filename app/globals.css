@@ -100,7 +100,7 @@ body {
 /* ---- 投稿ノート ---- */
 .notebook {
   background:
-    linear-gradient(90deg, transparent 22px, rgba(232, 85, 58, 0.35) 22px 24px, transparent 24px),
+    linear-gradient(90deg, transparent 22px, rgba(232, 85, 58, 0.18) 22px 24px, transparent 24px),
     repeating-linear-gradient(transparent 0 27px, rgba(60, 141, 222, 0.16) 27px 28px),
     #fffdf6;
   border-radius: 4px 6px 4px 18px;

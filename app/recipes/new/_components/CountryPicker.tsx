@@ -122,7 +122,7 @@ export function CountryPicker({ picked, onChange }: Props) {
             disabled={full}
             placeholder={full ? `${LIMITS.countries}つまでだよ` : "国をさがす（ペルー、じょーじあ、Thailand…）"}
             aria-label="国をさがす"
-            className="font-hand min-w-0 flex-1 bg-transparent py-1 text-[0.9rem] text-ink outline-none placeholder:text-ink/35 disabled:opacity-50"
+            className="font-hand min-w-0 flex-1 bg-transparent py-1 text-[0.9rem] text-ink outline-none placeholder:text-ink/45 disabled:opacity-50"
           />
         </div>
 

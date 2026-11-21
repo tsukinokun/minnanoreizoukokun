@@ -67,7 +67,7 @@ export function IngredientList({ master, items, error, onChange }: Props) {
                 onChange={(e) => update(it.key, e.target.value)}
                 placeholder="分量"
                 aria-label={`${it.name}の分量`}
-                className="font-hand w-[5.5rem] border-b border-ink/30 bg-transparent text-right text-[0.85rem] text-ink outline-none placeholder:text-ink/30"
+                className="font-hand w-[5.5rem] border-b border-ink/30 bg-transparent text-right text-[0.85rem] text-ink outline-none placeholder:text-ink/45"
               />
               <button
                 type="button"
@@ -96,7 +96,7 @@ export function IngredientList({ master, items, error, onChange }: Props) {
             onChange={(e) => setQ(e.target.value)}
             placeholder="材料をさがす・書く（例: 卵、パクチー）"
             aria-label="材料をさがす・足す"
-            className="font-hand min-w-0 flex-1 bg-transparent py-1 text-[0.9rem] text-ink outline-none placeholder:text-ink/35"
+            className="font-hand min-w-0 flex-1 bg-transparent py-1 text-[0.9rem] text-ink outline-none placeholder:text-ink/45"
             enterKeyHint="enter"
           />
         </div>
