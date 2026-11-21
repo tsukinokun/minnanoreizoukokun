@@ -7,6 +7,7 @@ import { jitter } from "@/lib/jitter";
 import type { DiagnosisResult, ReactionCounts } from "@/lib/types";
 import { CountryChips } from "@/app/_components/CountryChips";
 import { LikeButton } from "@/app/_components/LikeButton";
+import { StockButton } from "@/app/_components/StockButton";
 import { Photo } from "@/app/_components/Photo";
 import {
   Cover,
@@ -82,7 +83,10 @@ export function RecipeCard({ results, counts, onRetry }: Props) {
                 </p>
                 <CountryChips tags={recipe.tags} className="mt-1.5" />
               </div>
-              <LikeButton key={recipe.id} recipeId={recipe.id} count={counts[recipe.id]?.likes ?? 0} className="shrink-0" />
+              <div className="flex shrink-0 items-start gap-1">
+                <StockButton key={`s-${recipe.id}`} recipeId={recipe.id} />
+                <LikeButton key={recipe.id} recipeId={recipe.id} count={counts[recipe.id]?.likes ?? 0} />
+              </div>
             </div>
             <RecipeLinks recipeId={recipe.id} comments={counts[recipe.id]?.comments ?? 0} />
             {recipe.description && <p className="mt-2 text-[0.78rem] leading-relaxed">{recipe.description}</p>}

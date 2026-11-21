@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useState } from "react";
+import { NameTag } from "@/app/_components/NameTag";
 import { RedPen } from "@/app/recipes/new/_components/bits";
 
 export type LoginState =
@@ -172,68 +172,9 @@ function SignedIn({
   onLogout?: () => void;
   onSaveName?: (name: string) => Promise<string | undefined>;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(state.name ?? "");
-  const [saving, setSaving] = useState(false);
-  const [nameError, setNameError] = useState<string>();
-
-  const save = async () => {
-    if (!onSaveName) return;
-    setSaving(true);
-    const e = await onSaveName(draft);
-    setSaving(false);
-    setNameError(e);
-    if (!e) setEditing(false);
-  };
-
   return (
     <div>
-      {/* 名札 */}
-      <div className="relative mx-auto w-[92%] rounded-[10px] bg-white shadow-[2px_6px_12px_rgba(60,40,20,0.18)]">
-        <div className="rounded-t-[10px] bg-[var(--tomato)] px-4 py-1.5 text-center text-white">
-          <p className="text-[0.62rem] tracking-[0.3em]">HELLO</p>
-          <p className="font-hand text-sm">この冷蔵庫の持ち主は</p>
-        </div>
-        <div className="px-4 pb-4 pt-3 text-center">
-          {editing ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                save();
-              }}
-              className="flex items-center gap-2"
-            >
-              <input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                maxLength={20}
-                autoFocus
-                aria-label="名札（投稿者名）"
-                className="font-hand min-w-0 flex-1 border-b-2 border-ink/40 bg-transparent text-center text-2xl text-ink outline-none"
-              />
-              <button type="submit" disabled={saving} className="font-hand shrink-0 rounded-full bg-ink px-3 py-1 text-xs text-white disabled:opacity-50">
-                {saving ? "…" : "書く"}
-              </button>
-            </form>
-          ) : (
-            <button type="button" onClick={() => setEditing(true)} className="group w-full" aria-label="名札を書きかえる">
-              <span className="font-hand block text-[1.8rem] leading-tight text-ink">{state.name ?? "ななしの台所"}</span>
-              <span className="text-[0.62rem] text-ink/40 group-hover:text-ink/70">✎ タップで書きかえ（レシピの「by ○○」になります）</span>
-            </button>
-          )}
-          <RedPen message={nameError} />
-          {state.email && <p className="mt-1 truncate text-[0.62rem] text-ink/40">{state.email}</p>}
-        </div>
-        <motion.span
-          aria-hidden
-          className="font-hand absolute -right-4 -top-5 rounded-full border-[3px] border-[#c0392b] bg-[#fffdf6]/80 px-2 text-[#c0392b]"
-          initial={{ scale: 2, opacity: 0, rotate: -30 }}
-          animate={{ scale: 1, opacity: 0.9, rotate: -14 }}
-          transition={{ delay: 0.4, type: "spring", stiffness: 600, damping: 15 }}
-        >
-          ようこそ
-        </motion.span>
-      </div>
+      <NameTag name={state.name} email={state.email} stamp="ようこそ" onSave={onSaveName} />
 
       {state.next ? (
         <p className="font-hand mt-6 text-center text-sm text-ink/70" role="status">
@@ -243,7 +184,7 @@ function SignedIn({
           </Link>
         </p>
       ) : (
-        <Links />
+        <Links mine />
       )}
 
       <p className="mt-6 text-center">
@@ -255,9 +196,14 @@ function SignedIn({
   );
 }
 
-function Links() {
+function Links({ mine = false }: { mine?: boolean }) {
   return (
-    <p className="font-hand mt-5 flex justify-center gap-5 text-sm">
+    <p className="font-hand mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
+      {mine && (
+        <Link href="/me" className="text-ink underline decoration-wavy decoration-[var(--tomato)] underline-offset-4">
+          わたしの冷蔵庫 →
+        </Link>
+      )}
       <Link href="/diagnosis" className="text-ink/70 underline decoration-dotted underline-offset-4 hover:text-ink">
         🧊 冷蔵庫へ
       </Link>

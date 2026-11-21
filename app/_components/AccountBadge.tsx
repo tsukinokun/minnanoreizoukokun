@@ -6,13 +6,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { loginHref } from "@/lib/auth/next";
 import { getMyProfileName } from "@/lib/auth/profile";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 import { useAuth } from "@/lib/supabase/useAuth";
 
 /**
  * 小さな名札マグネット。
  * - 未ログイン・匿名: 「ログイン」→ /login?next=<いまのページ>
- * - Google でログイン済み: 名札の頭文字 → /login（名札の書きかえ・ログアウト）
- * - Supabase 未設定: 「ログイン」（/login で仮保存モードだと説明する）
+ * - Google でログイン済み: 名札の頭文字 → /me（わたしの冷蔵庫。ストック・投稿・名札の書きかえ・ログアウト）
+ * - Supabase 未設定: 「わたしの」→ /me（ログインは無いので、この端末の仮保存を見る入口にする）
  * useAuth() を使うので、Google から戻ってきたページでもログインが完了する。
  */
 export function AccountBadge({ className = "" }: { className?: string }) {
@@ -30,8 +31,8 @@ export function AccountBadge({ className = "" }: { className?: string }) {
     };
   }, [signedIn, session]);
 
-  // Supabase 未設定でも出す（/login で「まだ使えない」と説明する）
   if (!ready) return null;
+  const configured = !!getSupabaseEnv();
 
   return (
     <motion.span
@@ -41,9 +42,17 @@ export function AccountBadge({ className = "" }: { className?: string }) {
       whileHover={{ rotate: 0, y: -2 }}
       transition={{ type: "spring", stiffness: 400, damping: 16 }}
     >
-      {signedIn ? (
+      {!configured ? (
         <Link
-          href="/login"
+          href="/me"
+          aria-label="わたしの冷蔵庫（この端末の仮保存）"
+          className="font-hand flex items-center gap-1 rounded-full border-2 border-ink/70 bg-[#fff8ea] px-2 py-0.5 text-[0.7rem] text-ink shadow-[0_2px_0_rgba(0,0,0,0.15)]"
+        >
+          <span aria-hidden>🧊</span>わたしの
+        </Link>
+      ) : signedIn ? (
+        <Link
+          href="/me"
           aria-label={`${name ?? "あなた"}の冷蔵庫（ログイン中）`}
           className="flex items-center gap-1 rounded-full bg-white py-0.5 pl-0.5 pr-2 shadow-[0_2px_0_rgba(0,0,0,0.2)]"
         >

@@ -64,7 +64,9 @@ await signOut();                                     // ログアウト
 - 自分のストックは自分にしか見えません
 - 投稿者名（by ○○）に Google の本名は使いません。名前は投稿画面の入力や `updateProfileName` で決めます
 - ログイン後は、ログインボタンを押したページに戻ってきます。そのページでも `useAuth()` を使ってください
-- ログイン画面は `/login`（`app/login`）。`/login?next=/recipes/xxx` で、ログインできたらそのページへ戻る（サイト内のパスだけ。`lib/auth/next.ts` の `safeNext`）。トップ・冷蔵庫・レシピ・コメント・投稿のどの画面にも名札マグネット `app/_components/AccountBadge.tsx` があり、そこから入れる（Supabase 未設定のときも出て、`/login` で仮保存モードだと説明する）
+- ログイン画面は `/login`（`app/login`）。`/login?next=/recipes/xxx` で、ログインできたらそのページへ戻る（サイト内のパスだけ。`lib/auth/next.ts` の `safeNext`）。トップ・冷蔵庫・レシピ・コメント・投稿のどの画面にも名札マグネット `app/_components/AccountBadge.tsx` があり、そこから入れる（Google ログイン中は `/me` へ。Supabase 未設定のときは「わたしの」として `/me` へ）
+- ストックはレシピページと診断結果のクリップ（`app/_components/StockButton.tsx`）から。送信口は `lib/stocks/client.ts`（Google ログインが要る。匿名なら `login_required` でログインの付箋を出す）。Supabase 未設定のときは localStorage `kyounosuki:stocks` に仮保存
+- ユーザー画面 `/me`（わたしの冷蔵庫）: 名札・ストック・投稿したレシピ・ひとこと・スキ。読み込みは `lib/me/client.ts`（自分の `recipes.author_id` / `recipe_comments.user_id` / `recipe_likes.user_id` をブラウザから読む）
 
 ## フロントからの使い方（投稿）
 

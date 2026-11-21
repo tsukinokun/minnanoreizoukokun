@@ -7,6 +7,7 @@ import { CountryChips } from "@/app/_components/CountryChips";
 import { AccountBadge } from "@/app/_components/AccountBadge";
 import { Kitchen } from "@/app/_components/Kitchen";
 import { LikeButton } from "@/app/_components/LikeButton";
+import { StockButton } from "@/app/_components/StockButton";
 import { Cover, Gallery, IngredientsList, Lightbox, StepsList, type Zoomed } from "@/app/_components/recipe/RecipeParts";
 import { getLocalComments } from "@/lib/reactions/client";
 import { jitter, pick } from "@/lib/jitter";
@@ -84,7 +85,10 @@ export function RecipeView({ recipe, likes, commentCount, latest }: Props) {
                 </p>
                 <CountryChips tags={recipe.tags} className="mt-1.5" />
               </div>
-              <LikeButton recipeId={recipe.id} count={likes} className="mt-1 shrink-0" />
+              <div className="mt-1 flex shrink-0 items-start gap-1">
+                <StockButton recipeId={recipe.id} />
+                <LikeButton recipeId={recipe.id} count={likes} />
+              </div>
             </div>
             {recipe.description && <p className="mt-3 text-[0.8rem] leading-relaxed">{recipe.description}</p>}
 
