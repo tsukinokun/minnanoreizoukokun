@@ -143,3 +143,5 @@ npm test          # vitest
 npm run db:seed   # data/*.json → supabase/seed.sql
 npm run build
 ```
+
+- ファビコンは冷蔵庫くん。元は `app/icon.svg`。直したら、`app/favicon.ico`（16/32/48px）と `app/apple-icon.png`（180px、背景 #f4ead6）も同じ絵で作り直す（sharp で SVG → PNG にして並べれば作れる）
