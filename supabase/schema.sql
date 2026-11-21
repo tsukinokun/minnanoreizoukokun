@@ -1,6 +1,6 @@
 -- =====================================================================
--- きょうのすき: Supabase テーブル定義（草案）
--- data/*.json と lib/types.ts と同じ形。まだ適用はしていない。
+-- みんなの冷蔵庫くん: Supabase テーブル定義
+-- data/*.json と lib/types.ts と同じ形。Supabase に適用済み（追加分は 02_login_stocks.sql など）。
 --
 -- 写真は Storage の公開バケット `recipe-photos` に置き、
 -- 各テーブルには公開 URL（または storage のパス）を保存する。
