@@ -214,7 +214,7 @@ export function RecipeForm({ questions, ingredients }: Props) {
                     onChange={(e) => patch({ description: e.target.value })}
                     placeholder="失敗しても、上からケチャップで描けば大丈夫。"
                     rows={2}
-                    className="lined-input mt-1 block w-full resize-none bg-transparent text-[0.88rem] leading-[1.75rem] text-ink outline-none placeholder:text-ink/25 [field-sizing:content]"
+                    className="lined-input mt-1 block w-full resize-none bg-transparent text-[0.88rem] leading-[1.75rem] text-ink outline-none placeholder:text-ink/45 [field-sizing:content]"
                   />
                   <RedPen message={errors.description} />
                 </label>

@@ -35,21 +35,24 @@ export function DoorNotes({ questions, answers, onAnswer }: Props) {
     }, 320);
   };
 
+  // 小さなメモは2段。列ごとに上下に並べる（重ならないよう、ずらしは各マスの中だけ）
+  const cols = Math.max(Math.ceil(rest.length / 2), 1);
+
   return (
-    <div className="absolute inset-0 overflow-clip rounded-[inherit] pr-9">
+    // 上：残りのメモ / 真ん中：いま答えるメモ / 下：答えたマグネット。縦に積むので互いに重ならない
+    <div className="absolute inset-0 flex flex-col overflow-clip rounded-[inherit] pr-9">
       {/* 上の方に貼られた、まだ答えていないメモ */}
-      <div className="relative h-[23%] min-h-[96px]">
-        <AnimatePresence>
-          {rest.map((q, i) => (
-            <SmallNote
-              key={q.id}
-              q={q}
-              index={i}
-              total={rest.length}
-              onClick={() => setFocusId(q.id)}
-            />
-          ))}
-        </AnimatePresence>
+      <div className="relative min-h-[84px] shrink-0 px-2 pb-4 pt-3">
+        <div
+          className="grid grid-flow-col grid-rows-2 gap-x-1.5 gap-y-2.5"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
+          <AnimatePresence mode="popLayout">
+            {rest.map((q, i) => (
+              <SmallNote key={q.id} q={q} index={i} onClick={() => setFocusId(q.id)} />
+            ))}
+          </AnimatePresence>
+        </div>
         {pending.length > 0 && (
           <span className="font-hand absolute bottom-0 right-1 rotate-[-5deg] text-[0.7rem] text-ink/55">
             のこり {pending.length} 枚
@@ -57,8 +60,8 @@ export function DoorNotes({ questions, answers, onAnswer }: Props) {
         )}
       </div>
 
-      {/* いま答えるメモ */}
-      <div className="relative flex h-[57%] items-center justify-center">
+      {/* いま答えるメモ。入りきらないときは上を揃える（safe center） */}
+      <div className="relative flex min-h-0 flex-1 justify-center" style={{ alignItems: "safe center" }}>
         <AnimatePresence mode="popLayout">
           {active ? (
             <ActiveNote key={active.id} q={active} chosen={chosen} onChoose={(oid) => choose(active, oid)} />
@@ -69,7 +72,7 @@ export function DoorNotes({ questions, answers, onAnswer }: Props) {
       </div>
 
       {/* 答えたマグネットのコレクション。タップで答え直し */}
-      <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-end gap-x-1 gap-y-1.5 pr-8">
+      <div className="relative z-10 flex shrink-0 flex-wrap items-end gap-x-1 gap-y-1.5 px-3 pb-3 pt-2">
         <AnimatePresence>
           {answered.map((q) => {
             const opt = q.options.find((o) => o.id === answers[q.id][0]);
@@ -87,10 +90,10 @@ export function DoorNotes({ questions, answers, onAnswer }: Props) {
                 transition={{ type: "spring", stiffness: 380, damping: 16 }}
                 onClick={() => setFocusId(q.id)}
                 title={`${q.text}：${opt.label}（タップで書き直す）`}
-                className="flex h-9 items-center gap-1 rounded-full pl-1.5 pr-2.5 text-[0.65rem] font-bold text-white shadow-[0_3px_0_rgba(0,0,0,0.2)]"
+                className="flex h-[30px] items-center gap-1 rounded-full pl-1 pr-2 text-[0.6rem] font-bold text-white shadow-[0_3px_0_rgba(0,0,0,0.2)]"
                 style={{ background: pick(q.id, MAGNET_COLORS) }}
               >
-                <OptionBadge option={opt} size={24} />
+                <OptionBadge option={opt} size={22} />
                 {opt.label}
               </motion.button>
             );
@@ -101,22 +104,20 @@ export function DoorNotes({ questions, answers, onAnswer }: Props) {
   );
 }
 
-function SmallNote({ q, index, total, onClick }: { q: Question; index: number; total: number; onClick: () => void }) {
-  const base = jitter(q.id, -9, 9);
-  // 2段にずらして貼る（きっちり揃えない）
-  const cols = Math.max(Math.ceil(total / 2), 1);
+function SmallNote({ q, index, onClick }: { q: Question; index: number; onClick: () => void }) {
+  const base = jitter(q.id, -8, 8);
+  // マスの中だけでずらす（きっちり揃えないけど、となりにはかからない）
   const lower = index % 2 === 1;
-  const left = 3 + (Math.floor(index / 2) / cols) * 72 + (lower ? 11 : 0) + jitter(q.id + "x", -3, 3);
-  const top = lower ? jitter(q.id + "y", 44, 54) : jitter(q.id + "y", 4, 14);
   return (
     <motion.button
       type="button"
+      layout
       onClick={onClick}
       aria-label={`${q.text} のメモを開く`}
-      className="absolute w-[3.6rem] px-1 pb-1.5 pt-2 text-left shadow-[1px_3px_4px_rgba(0,0,0,0.12)]"
+      className="relative w-[3.6rem] max-w-[calc(100%-0.6rem)] justify-self-start px-1 pb-1.5 pt-2 text-left shadow-[1px_3px_4px_rgba(0,0,0,0.12)]"
       style={{
-        left: `${left}%`,
-        top: `${top}%`,
+        marginLeft: lower ? jitter(q.id + "x", 6, 10) : jitter(q.id + "x", 0, 4),
+        marginTop: jitter(q.id + "y", 0, 5),
         background: pick(q.id, NOTE_COLORS),
         borderRadius: pick(q.id + "br", ["2px 2px 2px 10px", "2px", "8px 2px 2px 2px"]),
       }}
@@ -140,6 +141,7 @@ function ActiveNote({ q, chosen, onChoose }: { q: Question; chosen: string | nul
   const color = pick(q.id, NOTE_COLORS);
   const folded = q.id.length % 3 === 0;
   const isMagnetBoard = q.kind === "condition";
+  const many = q.options.length > 5;
 
   return (
     <motion.div
@@ -172,7 +174,8 @@ function ActiveNote({ q, chosen, onChoose }: { q: Question; chosen: string | nul
       <p className="font-hand text-[1.45rem] leading-tight text-ink">{q.text}</p>
       {q.note && <p className="mt-0.5 text-[0.68rem] text-ink/55">― {q.note}</p>}
 
-      <div className="mt-4 flex flex-wrap gap-x-2 gap-y-2.5">
+      {/* 選択肢が多い質問（国など）は、2列の小さめマグネットにして背を低くする */}
+      <div className={many ? "mt-3 grid grid-cols-2 gap-x-1.5 gap-y-1.5" : "mt-4 flex flex-wrap gap-x-2 gap-y-2.5"}>
         {q.options.map((o, i) => {
           const isChosen = chosen === o.id;
           const dim = chosen && !isChosen;
@@ -181,13 +184,15 @@ function ActiveNote({ q, chosen, onChoose }: { q: Question; chosen: string | nul
               type="button"
               key={o.id}
               onClick={() => onChoose(o.id)}
-              className="flex items-center gap-1.5 rounded-full border-2 border-ink/80 bg-white/80 py-1 pl-1 pr-3 text-[0.8rem] font-bold text-ink"
-              style={{ marginTop: jitter(o.id + q.id, 0, 6) }}
+              className={`flex min-w-0 items-center rounded-[16px] border-2 border-ink/80 bg-white/80 font-bold text-ink ${
+                many ? "gap-1 py-0.5 pl-0.5 pr-1.5 text-[0.64rem] leading-tight" : "gap-1.5 py-1 pl-1 pr-3 text-[0.8rem]"
+              }`}
+              style={{ marginTop: many ? jitter(o.id + q.id, 0, 3) : jitter(o.id + q.id, 0, 6) }}
               initial={{ opacity: 0, y: 10, rotate: 0 }}
               animate={{
                 opacity: dim ? 0.35 : 1,
                 y: 0,
-                rotate: jitter(o.id, -5, 5),
+                rotate: many ? jitter(o.id, -2.5, 2.5) : jitter(o.id, -5, 5),
                 scale: isChosen ? [1, 1.25, 1.08] : 1,
                 backgroundColor: isChosen ? pick(o.id, MAGNET_COLORS) : "rgba(255,255,255,0.8)",
                 color: isChosen ? "#fff" : "var(--ink)",
@@ -203,8 +208,9 @@ function ActiveNote({ q, chosen, onChoose }: { q: Question; chosen: string | nul
                 scale: { duration: 0.3, ease: "easeOut" },
               }}
             >
-              <OptionBadge option={o} size={28} />
-              {o.label}
+              <OptionBadge option={o} size={many ? 22 : 28} />
+              {/* 長い名前は省略せず、マグネットの中で折り返す */}
+              <span className={many ? "min-w-0 text-left [overflow-wrap:anywhere]" : undefined}>{o.label}</span>
             </motion.button>
           );
         })}

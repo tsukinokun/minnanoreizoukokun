@@ -102,7 +102,7 @@ export function DiagnosisFlow({ questions, recipes, ingredients, counts }: Props
     <MotionConfig reducedMotion="user">
       <Kitchen>
         <div className="relative mx-auto flex h-dvh w-full max-w-[440px] flex-col items-center px-4 pt-6 pb-3">
-          <Header line={line} />
+          <Header line={line} onBack={phase === "inside" ? () => setPhase("door") : undefined} />
 
           <Fridge
             line={line}
@@ -164,18 +164,43 @@ function lineFor(phase: Phase, doorDone: boolean): string {
   }
 }
 
-function Header({ line }: { line: string }) {
+/** onBack があるとき（冷蔵庫を開けている間）は、タイトルの下に「← メモにもどる」を出す */
+function Header({ line, onBack }: { line: string; onBack?: () => void }) {
   return (
     <div className="mb-3 flex w-full items-end justify-between gap-3">
-      <h1 className="font-hand shrink-0 whitespace-nowrap pb-1 leading-none text-ink -rotate-2">
-        <span className="text-[0.8rem]">みんなの</span>
-        <span className="relative ml-0.5 inline-block text-[1.2rem]">
-          冷蔵庫くん
-          <svg className="absolute -bottom-1.5 left-0 w-full" viewBox="0 0 40 6" aria-hidden>
-            <path d="M1 4 Q 10 1 20 3.5 T 39 2.5" stroke="var(--tomato)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          </svg>
-        </span>
-      </h1>
+      <div className="flex shrink-0 flex-col items-start">
+        <h1 className="font-hand shrink-0 whitespace-nowrap pb-1 leading-none text-ink -rotate-2">
+          <span className="text-[0.8rem]">みんなの</span>
+          <span className="relative ml-0.5 inline-block text-[1.2rem]">
+            冷蔵庫くん
+            <svg className="absolute -bottom-2 left-0 h-[6px] w-full" viewBox="0 0 40 6" preserveAspectRatio="none" aria-hidden>
+              <path
+                d="M1 4 Q 10 1 20 3.5 T 39 2.5"
+                stroke="var(--tomato)"
+                strokeWidth="2.2"
+                vectorEffect="non-scaling-stroke"
+                fill="none"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
+        </h1>
+        <AnimatePresence initial={false}>
+          {onBack && (
+            <motion.button
+              type="button"
+              onClick={onBack}
+              className="font-hand mt-2.5 -rotate-1 overflow-hidden rounded-[3px_8px_3px_6px] bg-[#fff8ea] px-2 py-0.5 text-[0.75rem] text-ink shadow-[1px_2px_4px_rgba(60,40,20,0.18)] hover:-rotate-3"
+              initial={{ opacity: 0, height: 0, y: -6 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            >
+              ← メモにもどる
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
       <SpeechBubble line={line} />
     </div>
   );

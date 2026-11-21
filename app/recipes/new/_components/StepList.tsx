@@ -114,7 +114,7 @@ function StepRow({
           placeholder={index === 0 ? "たとえば、じゃがいもを一口大に切る" : "つぎは？"}
           aria-label={`工程${index + 1}`}
           rows={1}
-          className="lined-input block w-full resize-none bg-transparent text-[0.88rem] leading-[1.75rem] text-ink outline-none placeholder:text-ink/25 [field-sizing:content]"
+          className="lined-input block w-full resize-none bg-transparent text-[0.88rem] leading-[1.75rem] text-ink outline-none placeholder:text-ink/45 [field-sizing:content]"
         />
         {step.photo && (
           <motion.span

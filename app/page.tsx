@@ -5,13 +5,14 @@ export default function Home() {
   return (
     <main className="kitchen-wall relative grid min-h-dvh place-items-center px-6">
       <div className="max-w-xs text-center">
-        <p className="text-xs text-ink/60">まだ「好き」に出会えていない誰かへ</p>
+        <p className="text-xs text-ink/60">新しいスキな料理を、あなたに</p>
         <h1 className="font-hand mt-2 -rotate-2 text-[2.1rem] leading-tight text-ink">
           <span className="block text-xl">みんなの</span>
           <span className="relative inline-block">
             冷蔵庫くん
-            <svg className="absolute -bottom-1.5 left-0 w-full" viewBox="0 0 40 6" aria-hidden>
-              <path d="M1 4 Q 10 1 20 3.5 T 39 2.5" stroke="var(--tomato)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+            {/* 幅だけ伸ばして、高さは一定（文字にかぶらない） */}
+            <svg className="absolute -bottom-2 left-0 h-[8px] w-full" viewBox="0 0 40 6" preserveAspectRatio="none" aria-hidden>
+              <path d="M1 4 Q 10 1 20 3.5 T 39 2.5" stroke="var(--tomato)" strokeWidth="3" vectorEffect="non-scaling-stroke" fill="none" strokeLinecap="round" />
             </svg>
           </span>
         </h1>
