@@ -1,6 +1,7 @@
 "use client";
 
 import { addStock, listStocks, removeStock } from "@/app/actions/stocks";
+import { getMemberSession } from "@/lib/auth/member";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 import type { Recipe } from "@/lib/types";
 
@@ -34,13 +35,7 @@ const writeLocal = (list: LocalStock[]) => {
 };
 
 /** Google などでログインしている人のアクセストークン。匿名・未ログインなら null */
-async function memberToken(): Promise<string | null> {
-  const sb = getBrowserSupabase();
-  if (!sb) return null;
-  const { data } = await sb.auth.getSession();
-  const s = data.session;
-  return s && !s.user.is_anonymous ? s.access_token : null;
-}
+const memberToken = async () => (await getMemberSession())?.token ?? null;
 
 let myStocks: Promise<Set<string>> | null = null;
 

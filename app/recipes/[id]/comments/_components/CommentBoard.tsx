@@ -4,6 +4,7 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AccountBadge } from "@/app/_components/AccountBadge";
+import { AuthorLink } from "@/app/_components/AuthorLink";
 import { Kitchen } from "@/app/_components/Kitchen";
 import { Photo } from "@/app/_components/Photo";
 import { Lightbox, type Zoomed } from "@/app/_components/recipe/RecipeParts";
@@ -161,9 +162,9 @@ function Note({ comment: c, index, onZoom, onPeel }: { comment: ShownComment; in
 function Meta({ c, onPeel }: { c: ShownComment; onPeel: () => void }) {
   return (
     <p className="mt-1.5 flex items-center justify-between gap-1 text-[0.6rem] text-ink/50">
-      <span className="truncate">
-        {c.author.name}・{dateLabel(c.createdAt)}
-      </span>
+      {/* アカウントのある人だけ、その人の冷蔵庫へのリンクにする（見本・仮保存のコメントは名前だけ） */}
+      <AuthorLink author={c.author} size={16} link={!!c.author.id} suffix={`・${dateLabel(c.createdAt)}`} />
+
       {c.mine && (
         <button type="button" onClick={onPeel} className="shrink-0 rounded-full px-1.5 py-0.5 text-[var(--tomato)] hover:bg-black/5" aria-label="自分のコメントをはがす">
           はがす

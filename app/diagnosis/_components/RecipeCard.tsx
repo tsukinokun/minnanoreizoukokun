@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { jitter } from "@/lib/jitter";
 import type { DiagnosisResult, ReactionCounts } from "@/lib/types";
+import { AuthorLink } from "@/app/_components/AuthorLink";
 import { CountryChips } from "@/app/_components/CountryChips";
 import { LikeButton } from "@/app/_components/LikeButton";
 import { StockButton } from "@/app/_components/StockButton";
@@ -77,7 +78,7 @@ export function RecipeCard({ results, counts, onRetry }: Props) {
                 <p className="text-[0.7rem] text-ink/55">{recipe.catch}</p>
                 <h2 className="font-hand text-[1.7rem] leading-tight">{recipe.title}</h2>
                 <p className="mt-1 flex flex-wrap gap-x-3 text-[0.68rem] text-ink/55">
-                  <span>by {recipe.author.name}</span>
+                  <AuthorLink author={recipe.author} prefix="by " />
                   <span>⏱ {recipe.minutes}分</span>
                   <span>{recipe.servings}人分</span>
                 </p>

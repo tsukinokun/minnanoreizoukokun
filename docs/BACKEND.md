@@ -13,6 +13,7 @@
 | 入力チェック | `lib/posting/validate.ts` |
 | テーブル定義・RLS・投稿用関数・Storage | `supabase/schema.sql` |
 | Google ログイン用の修正・ストックのテーブル・写真 URL の制限 | `supabase/02_login_stocks.sql` |
+| フォローのテーブル・アイコンの制限 | `supabase/03_follows_avatars.sql` |
 | 初期データ | `supabase/seed.sql`（`npm run db:seed` で `data/*.json` から生成） |
 | スキ・コメント（書き込み） | `app/actions/reactions.ts`（Server Actions）。ブラウザからは `lib/reactions/client.ts` 経由 |
 | スキ数・コメント（読み込み） | `lib/reactions/read.ts`。Supabase が無ければ `data/reactions.json`（仮データ） |
@@ -23,8 +24,8 @@
 
 ## Supabase のセットアップ
 
-1. SQL Editor で `supabase/schema.sql` → `supabase/02_login_stocks.sql` → `supabase/seed.sql` の順に実行する
-   - すでに schema.sql を流した環境では、`supabase/migrations/20261121_likes_comments.sql`（スキ・コメント）→ `supabase/02_login_stocks.sql` の順に追加で流せばよい（どちらも何度流しても大丈夫）
+1. SQL Editor で `supabase/schema.sql` → `supabase/02_login_stocks.sql` → `supabase/03_follows_avatars.sql` → `supabase/seed.sql` の順に実行する
+   - すでに schema.sql を流した環境では、`supabase/migrations/20261121_likes_comments.sql`（スキ・コメント）→ `supabase/02_login_stocks.sql` → `supabase/03_follows_avatars.sql` の順に追加で流せばよい（どちらも何度流しても大丈夫）
 2. Authentication → Sign In / Providers → **Allow anonymous sign-ins** を ON にする（投稿に必要）
 3. Google ログイン（ストックに必要）は下の「Google ログインの設定」
 4. `.env.example` を `.env.local` にコピーして URL と anon キーを入れる。Vercel でも同じ2つを Environment Variables に入れる

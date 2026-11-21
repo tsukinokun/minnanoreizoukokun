@@ -3,6 +3,7 @@
 import { MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AuthorLink } from "@/app/_components/AuthorLink";
 import { CountryChips } from "@/app/_components/CountryChips";
 import { AccountBadge } from "@/app/_components/AccountBadge";
 import { Kitchen } from "@/app/_components/Kitchen";
@@ -79,7 +80,7 @@ export function RecipeView({ recipe, likes, commentCount, latest }: Props) {
                 {recipe.catch && <p className="text-[0.7rem] text-ink/55">{recipe.catch}</p>}
                 <h1 className="font-hand text-[1.8rem] leading-tight">{recipe.title}</h1>
                 <p className="mt-1 flex flex-wrap gap-x-3 text-[0.68rem] text-ink/55">
-                  <span>by {recipe.author.name}</span>
+                  <AuthorLink author={recipe.author} prefix="by " />
                   <span>⏱ {recipe.minutes}分</span>
                   <span>{recipe.servings}人分</span>
                 </p>

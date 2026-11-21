@@ -2,6 +2,7 @@
 
 import { updateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/repository";
+import { USERS_TAG } from "@/lib/users/tags";
 import { dbError, err, signedIn, type ActionError } from "@/lib/supabase/session";
 import { validateIngredient, validatePhoto, validateProfileName, validateRecipe } from "@/lib/posting/validate";
 
@@ -92,5 +93,21 @@ export async function updateProfileName(accessToken: string, name: unknown): Pro
   const { error } = await auth.sb.from("profiles").update({ name: v.value }).eq("id", auth.userId);
   if (error) return dbError(error);
   updateTag(CACHE_TAGS.recipes);
+  updateTag(USERS_TAG);
+  return { ok: true };
+}
+
+/** アイコンを変える（null で外す）。写真は自分がアップロードしたものだけ */
+export async function updateProfileAvatar(accessToken: string, url: unknown): Promise<{ ok: true } | ActionError> {
+  const auth = await signedIn(accessToken);
+  if ("ok" in auth) return auth;
+  if (auth.isAnonymous) return err("login_required", "アイコンは Google でログインすると設定できます");
+  if (url !== null && (typeof url !== "string" || !auth.isOwnPhoto(url))) {
+    return { ok: false, error: "invalid_input", message: "アイコンの写真をアップロードし直してください" };
+  }
+  const { error } = await auth.sb.from("profiles").update({ avatar_url: url }).eq("id", auth.userId);
+  if (error) return dbError(error);
+  updateTag(CACHE_TAGS.recipes);
+  updateTag(USERS_TAG);
   return { ok: true };
 }

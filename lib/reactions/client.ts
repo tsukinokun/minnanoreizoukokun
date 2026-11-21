@@ -3,6 +3,7 @@
 import { updateProfileName } from "@/app/actions/posting";
 import { addComment, deleteComment as deleteCommentAction, toggleLike as toggleLikeAction } from "@/app/actions/reactions";
 import { ensureSignedIn, getBrowserSupabase, uploadPhoto } from "@/lib/supabase/browser";
+import { shrinkToDataUrl } from "@/lib/image";
 import type { RecipeComment } from "@/lib/types";
 
 /**
@@ -157,16 +158,4 @@ export async function removeComment(comment: ShownComment): Promise<{ ok: true }
   } catch {
     return { ok: false, message: "はがせませんでした。もう一度どうぞ" };
   }
-}
-
-/** 仮保存用に、写真を長辺 480px の jpeg に縮めて data URL にする（localStorage に入る大きさに） */
-async function shrinkToDataUrl(file: File, max = 480): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  return canvas.toDataURL("image/jpeg", 0.8);
 }

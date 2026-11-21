@@ -58,12 +58,15 @@ export type RecipePhoto = {
   kind: "finished" | "process";
 };
 
+/** レシピ・コメントを書いた人。id はアカウントがある人だけ（見本データの作者は名前だけ） */
+export type Author = { name: string; id?: string; avatarUrl?: string | null };
+
 export type Recipe = {
   id: string;
   title: string;
   catch: string;
   description?: string;
-  author: { name: string };
+  author: Author;
   coverImage?: string | null;
   photos: RecipePhoto[];
   minutes: number;
@@ -120,7 +123,7 @@ export type DiagnosisResult = {
 export type RecipeComment = {
   id: string;
   recipeId: string;
-  author: { name: string };
+  author: Author;
   body: string;
   photo?: string | null;
   createdAt: string;
