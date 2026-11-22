@@ -147,12 +147,7 @@ export function RecipeForm({ questions, ingredients }: Props) {
                 transition={{ type: "spring", stiffness: 140, damping: 18 }}
               >
                 {/* ノートを留めるテープ */}
-                <motion.span
-                  aria-hidden
-                  className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 bg-[rgba(255,255,255,0.65)] shadow-sm"
-                  animate={{ rotate: [-3, -1.5, -3] }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                />
+                <span aria-hidden className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 -rotate-3 bg-[rgba(255,255,255,0.65)] shadow-sm" />
 
                 <div data-field="title">
                   <TitleNote draft={draft} errors={errors} onChange={patch} />

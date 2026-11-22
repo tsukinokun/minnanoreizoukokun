@@ -81,8 +81,6 @@ export function CommentBoard({ recipe, comments }: Props) {
             {all.length === 0 && (
               <motion.p
                 className="font-hand mx-auto mt-16 w-fit rotate-2 bg-[#fff8ea] px-4 py-5 text-center text-sm text-ink/70 shadow-[2px_6px_10px_rgba(60,40,20,0.15)]"
-                animate={{ rotate: [2, -1, 2] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               >
                 まだだれも貼ってない。
                 <br />
@@ -144,12 +142,10 @@ function Note({ comment: c, index, onZoom, onPeel }: { comment: ShownComment; in
           className="px-2.5 pb-2 pt-4 shadow-[1px_4px_7px_rgba(60,40,20,0.14)]"
           style={{ background: pick(c.id, NOTE_COLORS), borderRadius: pick(c.id + "br", ["2px 2px 2px 14px", "2px", "12px 2px 2px 2px"]) }}
         >
-          <motion.span
+          <span
             aria-hidden
             className="absolute -top-1.5 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full shadow-[0_2px_0_rgba(0,0,0,0.25)]"
             style={{ background: pick(c.id + "mag", MAGNET_COLORS) }}
-            animate={{ rotate: [0, 8, 0] }}
-            transition={{ duration: jitter(c.id + "d", 3, 6), repeat: Infinity, ease: "easeInOut" }}
           />
           <figcaption className="font-hand whitespace-pre-wrap break-words text-[0.85rem] leading-snug text-ink">{c.body}</figcaption>
           <Meta c={c} onPeel={onPeel} />

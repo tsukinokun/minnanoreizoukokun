@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Klee_One, Noto_Color_Emoji, Zen_Maru_Gothic } from "next/font/google";
+import { FlagSupport } from "./_components/FlagSupport";
 import "./globals.css";
 
 // 和文フォントはサイズが大きいので preload せず、unicode-range で必要な分だけ読む
@@ -37,7 +38,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ja" className={`${zenMaru.variable} ${klee.variable} ${flagFont.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <FlagSupport />
+        {children}
+      </body>
     </html>
   );
 }

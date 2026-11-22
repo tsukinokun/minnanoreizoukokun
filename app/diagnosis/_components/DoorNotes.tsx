@@ -121,14 +121,12 @@ function SmallNote({ q, index, onClick }: { q: Question; index: number; onClick:
         background: pick(q.id, NOTE_COLORS),
         borderRadius: pick(q.id + "br", ["2px 2px 2px 10px", "2px", "8px 2px 2px 2px"]),
       }}
-      initial={{ opacity: 0, scale: 0.4 }}
-      animate={{ opacity: 1, scale: 1, rotate: [base, base + 2.5, base - 1.5, base] }}
+      // 傾けて貼ったまま、ゆらさない（何枚もずっと動かすとスマホで重くなる）
+      initial={{ opacity: 0, scale: 0.4, rotate: base }}
+      animate={{ opacity: 1, scale: 1, rotate: base }}
       exit={{ opacity: 0, scale: 1.6, y: 120 }}
-      whileHover={{ y: -4 }}
-      transition={{
-        rotate: { duration: jitter(q.id + "d", 2.8, 4.6), repeat: Infinity, ease: "easeInOut", delay: index * 0.3 },
-        default: { type: "spring", stiffness: 260, damping: 20 },
-      }}
+      whileHover={{ y: -4, rotate: base + 3 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
     >
       <span className="absolute -top-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#e74c3c] shadow-[0_1px_0_rgba(0,0,0,0.3)]" />
       <span className="font-hand line-clamp-2 block text-[0.55rem] leading-tight text-ink/80">{q.text}</span>
@@ -151,12 +149,9 @@ function ActiveNote({ q, chosen, onChoose }: { q: Question; chosen: string | nul
         borderRadius: folded ? "3px 3px 26px 3px" : "3px 6px 3px 4px",
       }}
       initial={{ opacity: 0, y: -80, scale: 0.6, rotate: base - 18 }}
-      animate={{ opacity: 1, y: 0, scale: 1, rotate: [base, base + 0.9, base] }}
+      animate={{ opacity: 1, y: 0, scale: 1, rotate: base }}
       exit={{ opacity: 0, y: 360, rotate: base + jitter(q.id + "fall", -40, 40), transition: { duration: 0.7, ease: [0.5, 0, 0.9, 0.5] } }}
-      transition={{
-        rotate: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-        default: { type: "spring", stiffness: 200, damping: 17 },
-      }}
+      transition={{ type: "spring", stiffness: 200, damping: 17 }}
     >
       {/* 留めているマグネット or テープ */}
       {isMagnetBoard ? (

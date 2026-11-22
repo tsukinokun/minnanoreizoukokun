@@ -21,7 +21,9 @@ export function CookingTransition({ active }: { active: boolean }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pr-8">
       <div className="relative">
-        {[0, 1, 2].map((n) => (
+        {/* 湯気は料理中だけ（「チン！」のあと結果の下で出し続けない） */}
+        {!done &&
+          [0, 1, 2].map((n) => (
           <motion.svg
             key={n}
             viewBox="0 0 20 60"

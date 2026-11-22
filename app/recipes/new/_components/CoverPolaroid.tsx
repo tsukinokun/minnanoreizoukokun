@@ -16,8 +16,8 @@ export function CoverPolaroid({ cover, onPick, onClear }: Props) {
     <motion.div
       className="relative w-[9.5rem] shrink-0 bg-white p-2 pb-6 shadow-[2px_6px_12px_rgba(0,0,0,0.16)]"
       initial={{ rotate: 12, y: -20, opacity: 0 }}
-      animate={{ rotate: [5, 3.5, 5], y: 0, opacity: 1 }}
-      transition={{ rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" }, default: { type: "spring", stiffness: 160, damping: 14 } }}
+      animate={{ rotate: 5, y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 160, damping: 14 }}
     >
       {/* クリップ */}
       <span className="absolute -top-3 left-4 h-7 w-3 rounded-sm border-2 border-[#9aa4ad] bg-[#cfd6dc]" aria-hidden />

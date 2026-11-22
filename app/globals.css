@@ -24,8 +24,16 @@
   --color-ink: var(--ink);
   --font-sans: var(--font-zen-maru), "Hiragino Maru Gothic ProN", sans-serif;
   --font-hand: var(--font-klee), "Hiragino Mincho ProN", serif;
-  /* 国旗（Windows は国旗の絵文字を持っていない） */
-  --font-flag: var(--font-noto-emoji), "Apple Color Emoji", sans-serif;
+  /* 国旗。ふだんは端末の絵文字。描けない端末（主に Windows）だけ Noto Color Emoji（708KB）を使う → FlagSupport.tsx */
+  --font-flag: var(--flag-family);
+}
+
+/* ここに "Noto Color Emoji" を書くと、next/font の同名 @font-face に当たって全端末でダウンロードされるので書かない */
+:root {
+  --flag-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+}
+:root.flag-fallback {
+  --flag-family: var(--font-noto-emoji), "Segoe UI Emoji", sans-serif;
 }
 
 body {

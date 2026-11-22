@@ -8,12 +8,10 @@ export function Kitchen({ children }: { children: React.ReactNode }) {
   return (
     <div className="kitchen-wall relative min-h-dvh overflow-clip">
       <WallClock />
-      {/* 窓から入る光がゆっくり揺れる */}
-      <motion.div
+      {/* 窓から入る光（ずっと動かすとスマホで重いので、置いておくだけ） */}
+      <div
         aria-hidden
-        className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,236,190,0.55),transparent_65%)]"
-        animate={{ x: [0, -18, 6, 0], opacity: [0.7, 1, 0.8, 0.7] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(255,236,190,0.55),transparent_65%)] opacity-90"
       />
       <div aria-hidden className="kitchen-floor absolute inset-x-0 bottom-0 h-[16dvh]" />
       <div className="relative">{children}</div>

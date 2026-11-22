@@ -42,19 +42,11 @@ export function Fridge({ phase, canOpen, onOpen, door, interior, line }: Props) 
       className="relative min-h-0 w-full flex-1"
       transition={{ type: "spring", stiffness: 160, damping: 22 }}
     >
-      {/* 本体。待機中もブーンと少しだけ揺れている */}
+      {/* 本体。料理中だけガタガタ揺れる（待っている間は止めておく：スマホで重くなるため） */}
       <motion.div
         className="fridge-body relative flex h-full flex-col rounded-[30px_36px_14px_18px/30px_32px_14px_16px] p-[7px]"
-        animate={
-          phase === "cooking"
-            ? { x: [0, -2, 2, -1.5, 1.5, 0], rotate: [0, -0.4, 0.4, 0] }
-            : { x: 0, rotate: [0, 0.18, -0.12, 0] }
-        }
-        transition={
-          phase === "cooking"
-            ? { duration: 0.32, repeat: Infinity }
-            : { duration: 5.5, repeat: Infinity, ease: "easeInOut" }
-        }
+        animate={phase === "cooking" ? { x: [0, -2, 2, -1.5, 1.5, 0], rotate: [0, -0.4, 0.4, 0] } : { x: 0, rotate: 0 }}
+        transition={phase === "cooking" ? { duration: 0.32, repeat: Infinity } : { duration: 0.3 }}
       >
         <Freezer mood={pout ? "pout" : MOODS[phase]} line={line} />
 
@@ -109,21 +101,16 @@ function Freezer({ mood, line }: { mood: FaceMood; line?: string }) {
         transition={{ duration: 2.4, repeat: Infinity, times: [0, 0.1, 0.2] }}
       />
       {/* 冷凍室に貼りっぱなしのマグネット */}
-      <motion.span
-        aria-hidden
-        className="absolute right-5 top-2 text-xl"
-        animate={{ rotate: [-8, -4, -8] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-      >
+      <span aria-hidden className="absolute right-5 top-2 -rotate-6 text-xl">
         🐟
-      </motion.span>
+      </span>
     </div>
   );
 }
 
 /**
  * 冷凍室に貼ったマグネット付きのメモ帳。診断しなくても、ここからすぐレシピを貼りに行ける。
- * いちばん上の紙がときどき「ぺらっ」とめくれて、気づいてもらう。
+ * いちばん上の紙が最初に2回だけ「ぺらっ」とめくれて、気づいてもらう（ずっと動かすと重いので）。
  */
 function PostPad() {
   return (
@@ -137,7 +124,7 @@ function PostPad() {
       <motion.span
         className="relative block origin-top rounded-[2px] bg-[#fff8ea] px-1.5 pb-1.5 pt-2.5 shadow-[1px_2px_3px_rgba(0,0,0,0.15)] group-hover:-rotate-2"
         animate={{ rotateX: [0, 0, 28, -6, 0], y: [0, 0, -2, 0, 0] }}
-        transition={{ duration: 1.1, repeat: Infinity, repeatDelay: 5.5, times: [0, 0.2, 0.5, 0.75, 1] }}
+        transition={{ duration: 1.1, repeat: 1, repeatDelay: 5.5, delay: 1.5, times: [0, 0.2, 0.5, 0.75, 1] }}
         style={{ transformPerspective: 300 }}
       >
         {/* マグネット */}
@@ -172,14 +159,25 @@ function Handle({ canOpen, onPull, disabled }: { canOpen: boolean; onPull: () =>
       className="absolute right-2.5 top-[8%] z-20 flex h-[34%] w-6 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
     >
       <motion.span
-        className="block h-full w-[9px] rounded-full bg-[var(--chrome)] shadow-[1px_2px_0_rgba(0,0,0,0.18)]"
-        animate={
-          canOpen
-            ? { boxShadow: ["0 0 0 0 rgba(255,170,60,0)", "0 0 0 6px rgba(255,170,60,0.45)", "0 0 0 0 rgba(255,170,60,0)"], x: [0, -3, 0] }
-            : { boxShadow: "1px 2px 0 rgba(0,0,0,0.18)", x: 0 }
-        }
+        className="relative block h-full w-[9px] rounded-full bg-[var(--chrome)] shadow-[1px_2px_0_rgba(0,0,0,0.18)]"
+        animate={{ x: canOpen ? [0, -3, 0] : 0 }}
         transition={canOpen ? { duration: 1.4, repeat: Infinity } : { duration: 0.2 }}
-      />
+      >
+        {/* 光る輪。boxShadow を動かすと毎フレーム描き直しになるので、opacity と scale だけで光らせる */}
+        <AnimatePresence>
+          {canOpen && (
+            <motion.span
+              aria-hidden
+              className="absolute -inset-[5px] -z-10 rounded-full bg-[rgba(255,170,60,0.45)]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0], scale: [0.7, 1, 0.7] }}
+              // exit に transition を書かないと repeat: Infinity を引き継いで、消えずに動き続ける
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              transition={{ duration: 1.4, repeat: Infinity }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.span>
       <AnimatePresence>
         {canOpen && (
           <motion.span
@@ -210,7 +208,7 @@ function InteriorLight({ on }: { on: boolean }) {
   );
 }
 
-/** 冷気。重いので下へ流れ落ちる */
+/** 冷気。重いので下へ流れ落ちる。開けたときに2回だけ流す（ぼかし filter は使わず、グラデーションでふんわりさせる） */
 function ColdAir({ on }: { on: boolean }) {
   if (!on) return null;
   const puffs = [8, 26, 47, 63, 81];
@@ -219,11 +217,11 @@ function ColdAir({ on }: { on: boolean }) {
       {puffs.map((left, i) => (
         <motion.span
           key={left}
-          className="absolute bottom-0 h-10 w-14 rounded-full bg-white/70 blur-md"
+          className="absolute bottom-0 h-14 w-20 rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.75),rgba(255,255,255,0))]"
           style={{ left: `${left}%` }}
           initial={{ y: 0, opacity: 0, scale: 0.6 }}
           animate={{ y: [0, 40, 90], opacity: [0, 0.7, 0], scale: [0.6, 1.1, 1.5] }}
-          transition={{ duration: 3 + (i % 3) * 0.7, repeat: Infinity, delay: i * 0.55, ease: "easeOut" }}
+          transition={{ duration: 3 + (i % 3) * 0.7, repeat: 1, delay: i * 0.55, ease: "easeOut" }}
         />
       ))}
     </div>
