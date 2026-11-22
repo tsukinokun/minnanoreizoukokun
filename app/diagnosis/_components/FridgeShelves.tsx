@@ -122,7 +122,8 @@ function ShelfItem({
       type="button"
       aria-label={picked ? `${item.name}（まな板にのってる。押すと戻す）` : `${item.name}をまな板へ`}
       aria-pressed={picked}
-      className="shrink-0 snap-start select-none px-0.5"
+      // 灰色はクラスで切り替える（filter をアニメーションさせると、食材ぜんぶに filter の層ができて重い）
+      className={`shrink-0 snap-start select-none px-0.5 ${picked ? "grayscale" : ""}`}
       style={{ marginBottom: jitter(item.key + "mb", 0, 7) }}
       onPointerDown={(e) => !picked && drag.down(e, item, axis)}
       onPointerMove={drag.move}
@@ -138,7 +139,6 @@ function ShelfItem({
         y: 0,
         scale: 1,
         rotate: tilt,
-        filter: picked ? "grayscale(1)" : "grayscale(0)",
       }}
       whileHover={picked ? undefined : { y: -4, rotate: tilt * 0.4 }}
       transition={{ delay, type: "spring", stiffness: 300, damping: 18 }}

@@ -36,14 +36,9 @@ export function RedPen({ message, id }: { message?: string; id?: string }) {
 /** セクションの見出し。マスキングテープに手書き */
 export function Tape({ children, color = "rgba(255,226,122,0.8)", tilt = -2 }: { children: React.ReactNode; color?: string; tilt?: number }) {
   return (
-    <motion.h2
-      className="font-hand relative inline-block px-3 py-0.5 text-[0.95rem] text-ink"
-      style={{ background: color, rotate: `${tilt}deg` }}
-      animate={{ rotate: [tilt, tilt + 0.8, tilt] }}
-      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-    >
+    <h2 className="font-hand relative inline-block px-3 py-0.5 text-[0.95rem] text-ink" style={{ background: color, rotate: `${tilt}deg` }}>
       {children}
-    </motion.h2>
+    </h2>
   );
 }
 

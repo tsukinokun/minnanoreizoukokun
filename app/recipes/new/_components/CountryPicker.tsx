@@ -96,8 +96,7 @@ export function CountryPicker({ picked, onChange }: Props) {
         {picked.length === 0 && (
           <motion.span
             className="font-hand grid h-[4.6rem] w-[4.6rem] place-items-center rounded-full border-2 border-dashed border-ink/25 text-center text-[0.62rem] leading-snug text-ink/40"
-            animate={{ rotate: [-4, 4, -4] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            style={{ rotate: "-4deg" }}
           >
             ここに
             <br />

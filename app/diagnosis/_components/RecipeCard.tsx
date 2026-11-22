@@ -44,7 +44,7 @@ export function RecipeCard({ results, counts, onRetry }: Props) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(58,47,42,0.35)] px-3 pt-10 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(58,47,42,0.35)] px-3 pt-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
